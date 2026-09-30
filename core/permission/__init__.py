@@ -1,0 +1,1 @@
+from .student_view_permission import SchoolModelPermissions 

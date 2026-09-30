@@ -1,0 +1,2 @@
+from .student_viewset import StudentViewSet
+from .student_profile_viewset import StudentProfileViewSet
