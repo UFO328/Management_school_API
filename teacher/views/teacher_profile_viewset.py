@@ -8,4 +8,4 @@ class TeacherProfileViewSet(vw.ModelViewSet):
   permission_classes = [SchoolModelPermissions]
   
   def get_queryset(self):
-    return TeacherProfile.objects.select_related("teacher")
+    return TeacherProfile.objects.select_related("teacher").order_by("id")

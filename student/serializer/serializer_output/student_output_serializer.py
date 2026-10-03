@@ -5,4 +5,4 @@ from student.models import Student
 class StudentOutputSerializer(sz.ModelSerializer):
   class Meta:
     model = Student
-    fields = ["id","fullname","nis","nis","nisn","gender","status","is_active"]
+    fields = ["id","fullname","nis","nik","nisn","gender","status","is_active"]

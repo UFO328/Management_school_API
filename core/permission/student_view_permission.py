@@ -5,7 +5,7 @@ class SchoolModelPermissions(DjangoModelPermissions):
 
     
     def get_required_permissions(self, method, model_cls):
-        if method == "GET":
+        if method in ["GET","HEAD","OPTIONS"]:
             return [f"{model_cls._meta.app_label}.view_{model_cls._meta.model_name}"]
 
         if method == "POST":

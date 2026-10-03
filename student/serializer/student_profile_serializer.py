@@ -9,7 +9,7 @@ class StudentProfileSerializer(sz.ModelSerializer):
 
   class Meta:
     model = StudentProfile
-    fields = ['student','student_id','email','phone','birth_date','birth_place','address']
+    fields = ['id','student','student_id','email','phone','birth_date','birth_place','address']
 
   def validate(self, attrs):
     student = attrs.get("student", getattr(self.instance, "student", None))

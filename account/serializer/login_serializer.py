@@ -9,7 +9,7 @@ class LoginSerializer(sz.Serializer):
     username = data["username"]
     password = data["password"]
 
-    request = self.context.get("context")
+    request = self.context.get("request")
     user = authenticate(request,username=username,password=password)
 
     if not user:

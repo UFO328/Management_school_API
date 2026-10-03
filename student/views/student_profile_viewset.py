@@ -9,5 +9,5 @@ class StudentProfileViewSet(vw.ModelViewSet):
   permission_classes = [SchoolModelPermissions]
   
   def get_queryset(self):
-    return StudentProfile.objects.select_related("student")
+    return StudentProfile.objects.select_related("student").order_by("-id")
     
