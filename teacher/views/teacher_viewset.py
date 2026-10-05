@@ -1,14 +1,147 @@
-from rest_framework import viewsets as vw 
-from ..serializer import TeacherSerializer 
-from ..models import Teacher 
+from rest_framework import viewsets as vw
+from rest_framework import serializers as sz
 from core.permission import SchoolModelPermissions
-from rest_framework.exceptions import ValidationError 
+from rest_framework.exceptions import ValidationError
 from django.db.models import ProtectedError
+from drf_spectacular.utils import (
+  extend_schema_view, extend_schema, OpenApiExample, inline_serializer
+)
+from ..serializer import TeacherSerializer
+from ..models import Teacher
 
+_teacher_validation_error_400 = inline_serializer(
+  name="TeacherValidationError400",
+  fields={
+    "fullname": sz.ListField(child=sz.CharField(), required=False),
+    "nik": sz.ListField(child=sz.CharField(), required=False),
+    "status": sz.ListField(child=sz.CharField(), required=False),
+    "is_active": sz.ListField(child=sz.CharField(), required=False),
+  }
+)
+
+_teacher_protected_delete_400 = inline_serializer(
+  name="TeacherProtectedDelete400",
+  fields={"detail": sz.CharField()}
+)
+
+@extend_schema_view(
+  list=extend_schema(
+    summary="List semua teacher",
+    description=(
+      "Daftar guru terurut ascending berdasarkan `id`, "
+      "dipaginasi (20 data per halaman, query parameter `page`). "
+      "Memerlukan permission `teacher.view_teacher`."
+    ),
+    tags=["Teacher"],
+  ),
+  create=extend_schema(
+    summary="Buat teacher baru",
+    description=(
+      "Membuat data guru. `nik` wajib unik, `is_active` default `true`. "
+      "Memerlukan permission `teacher.add_teacher`."
+    ),
+    tags=["Teacher"],
+    responses={
+      201: TeacherSerializer,
+      400: _teacher_validation_error_400,
+    },
+    examples=[
+      OpenApiExample(
+        name="Request Valid",
+        value={
+          "fullname": "Andi Wijaya",
+          "nik": "3201011501900002",
+          "status": "active",
+          "is_active": True,
+        },
+        request_only=True,
+      ),
+      OpenApiExample(
+        name="Response Sukses",
+        value={
+          "id": 1,
+          "fullname": "Andi Wijaya",
+          "nik": "3201011501900002",
+          "status": "active",
+          "is_active": True,
+          "created_at": "2026-10-04T08:00:00Z",
+          "updated_at": "2026-10-04T08:00:00Z",
+        },
+        response_only=True,
+        status_codes=["201"],
+      ),
+      OpenApiExample(
+        name="Error - NIK sudah dipakai",
+        value={"nik": ["teacher with this nik already exists."]},
+        response_only=True,
+        status_codes=["400"],
+      ),
+      OpenApiExample(
+        name="Error - status tidak valid",
+        value={"status": ['"nonactive" is not a valid choice.']},
+        response_only=True,
+        status_codes=["400"],
+      ),
+    ],
+  ),
+  retrieve=extend_schema(
+    summary="Detail teacher",
+    description=(
+      "Mengembalikan satu guru berdasarkan `id`. "
+      "Memerlukan permission `teacher.view_teacher`."
+    ),
+    tags=["Teacher"],
+  ),
+  update=extend_schema(
+    summary="Update penuh teacher (PUT)",
+    description=(
+      "Mengganti seluruh data guru, semua field wajib dikirim. "
+      "Memerlukan permission `teacher.change_teacher`."
+    ),
+    tags=["Teacher"],
+    responses={
+      200: TeacherSerializer,
+      400: _teacher_validation_error_400,
+    },
+  ),
+  partial_update=extend_schema(
+    summary="Update sebagian teacher (PATCH)",
+    description=(
+      "Mengubah hanya field yang dikirim. "
+      "Memerlukan permission `teacher.change_teacher`."
+    ),
+    tags=["Teacher"],
+    responses={
+      200: TeacherSerializer,
+      400: _teacher_validation_error_400,
+    },
+  ),
+  destroy=extend_schema(
+    summary="Hapus teacher",
+    description=(
+      "Menghapus guru. Jika guru masih memiliki `TeacherProfile`, "
+      "penghapusan ditolak karena `on_delete=PROTECT` dan mengembalikan 400. "
+      "Memerlukan permission `teacher.delete_teacher`."
+    ),
+    tags=["Teacher"],
+    responses={
+      204: None,
+      400: _teacher_protected_delete_400,
+    },
+    examples=[
+      OpenApiExample(
+        name="Error - masih memiliki profile",
+        value={"detail": "User Ini masih Memiliki Profile"},
+        response_only=True,
+        status_codes=["400"],
+      ),
+    ],
+  ),
+)
 class TeacherViewSet(vw.ModelViewSet):
   serializer_class = TeacherSerializer
   permission_classes = [SchoolModelPermissions]
-  
+
   def get_queryset(self):
     return Teacher.objects.all().order_by("id")
 
@@ -17,4 +150,3 @@ class TeacherViewSet(vw.ModelViewSet):
       intances.delete()
     except ProtectedError:
       raise ValidationError({"detail":"User Ini masih Memiliki Profile"})
-      

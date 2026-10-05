@@ -15,7 +15,7 @@ class LoginAPIView(APIView):
 
     @extend_schema(
         summary="Login User",
-        description="Login dengan username & password untuk mendapatkan session. Role diambil dari groups Django. Dibatasi 10x per menit per IP (ScopedRateThrottle) dan akun terkunci sementara selama 1 jam setelah 5x gagal (django-axes).",
+        description="Login dengan username & password untuk mendapatkan session. Role diambil dari groups Django. Akun terkunci sementara selama 1 jam setelah 5x percobaan gagal (django-axes, ter-scope per username + IP).",
         request=LoginSerializer,
         responses={
             200: LoginResponseSerializer,
@@ -69,14 +69,8 @@ class LoginAPIView(APIView):
                 status_codes=["400"]
             ),
             OpenApiExample(
-                name="Error - Akun Belum Verifkasi OTP",
-                value={"detail": "Informasi Akun Tidak Di Temukan"},
-                response_only=True,
-                status_codes=["400"]
-            ),
-            OpenApiExample(
-                name="Error - Terlalu Banyak Percobaan / Akun Terkunci",
-                value={"detail": "Request was throttled. Expected available in 60 seconds."},
+                name="Error - Akun Terkunci (django-axes)",
+                value={"detail": "Account locked: too many login attempts. Please try again later."},
                 response_only=True,
                 status_codes=["429"]
             ),

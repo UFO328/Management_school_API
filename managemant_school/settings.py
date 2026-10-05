@@ -60,6 +60,34 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
 }
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Management School API",
+    "DESCRIPTION": (
+        "Dokumentasi API otomatis (drf-spectacular) untuk sistem manajemen sekolah.<br><br>"
+        "**Autentikasi:** session cookie. Login via `POST /auth/school/api/login/`, "
+        "logout via `POST /auth/school/api/logout/` (memerlukan CSRF token dari `GET /auth/school/api/csrf/`).<br>"
+        "`GET /auth/school/api/csrf/` adalah plain Django view (bukan DRF) sehingga tidak muncul di skema ini.<br><br>"
+        "**Authorization:** endpoint student & teacher menggunakan `SchoolModelPermissions` — "
+        "user yang login memerlukan permission Django sesuai method HTTP: "
+        "`<app>.view_<model>` (GET/HEAD/OPTIONS), `<app>.add_<model>` (POST), "
+        "`<app>.change_<model>` (PUT/PATCH), `<app>.delete_<model>` (DELETE)."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "TAGS": [
+        {"name": "Auth", "description": "Register, login, logout, dan CSRF cookie."},
+        {"name": "Student", "description": "CRUD data siswa (`Student`)."},
+        {"name": "Student Profile", "description": "CRUD profil siswa (`StudentProfile`) — relasi one-to-one ke `Student`."},
+        {"name": "Teacher", "description": "CRUD data guru (`Teacher`)."},
+        {"name": "Teacher Profile", "description": "CRUD profil guru (`TeacherProfile`) — relasi one-to-one ke `Teacher`."},
+    ],
+    "ENUM_NAME_OVERRIDES": {
+        "StudentStatusEnum": "student.models.student_model.Student.StatusChoice",
+        "StudentGenderEnum": "student.models.student_model.Student.GenderChoice",
+        "TeacherStatusEnum": "teacher.models.teacher_model.Teacher.StatusChoice",
+    },
+}
+
 # Brute force protection (django-axes)
 AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesStandaloneBackend',
@@ -82,12 +110,10 @@ AXES_HTTP_RESPONSE_CODE = 429
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "https://*.trycloudflare.com",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # WAJIB TAMBAHIN INI

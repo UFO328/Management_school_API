@@ -57,8 +57,8 @@ class RegisterAPIView(APIView):
                 status_codes=["400"]
             ),
             OpenApiExample(
-                name="Error - Password pendek",
-                value={"password": ["Minimal Password 8 Character"]},
+                name="Error - Password terlalu pendek",
+                value={"password": ["This password is too short.", "This password is too common."]},
                 response_only=True,
                 status_codes=["400"]
             ),
